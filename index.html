@@ -1,1 +1,454 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Carbon Footprint Calculator</title> <!-- Main Title -->
+    
+    <!-- Bootstrap 5 CSS CDN -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- FontAwesome for Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <style>
+        :root {
+            --primary-green: #2e7d32;
+            --header-green: #388e3c;
+            --light-green: #e8f5e9;
+            --accent-green: #1b5e20;
+        }
 
+        body {
+            background-color: #f4f7f6;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            color: #333;
+        }
+
+        /* Border box wrapper matching reference UI */
+        .calculator-card {
+            border: 2px solid var(--primary-green);
+            border-radius: 12px;
+            box-shadow: 0 6px 20px rgba(0, 0, 0, 0.08);
+            background-color: #ffffff;
+            overflow: hidden;
+        }
+
+        /* Reference style Card Header */
+        .custom-card-header {
+            background-color: var(--header-green);
+            color: white;
+            padding: 12px 20px;
+            font-weight: 600;
+            text-align: center;
+            border-bottom: 2px solid var(--accent-green);
+        }
+
+        /* Progress Bar Container */
+        .progress-wrapper {
+            height: 6px;
+            background-color: #e9ecef;
+            width: 100%;
+        }
+
+        .progress-bar-custom {
+            height: 100%;
+            background-color: var(--primary-green);
+            transition: width 0.3s ease-in-out;
+        }
+
+        /* Nav Tabs Custom Styling */
+        .nav-tabs {
+            border-bottom: 2px solid #dee2e6;
+            background-color: #f8f9fa;
+            padding-top: 8px;
+            padding-left: 10px;
+            padding-right: 10px;
+        }
+
+        .nav-tabs .nav-link {
+            color: #495057;
+            font-weight: 500;
+            border: 1px solid transparent;
+            border-top-left-radius: 6px;
+            border-top-right-radius: 6px;
+            padding: 8px 16px;
+            margin-right: 2px;
+            transition: all 0.2s ease;
+        }
+
+        .nav-tabs .nav-link:hover {
+            background-color: #e9ecef;
+            border-color: #e9ecef #e9ecef #dee2e6;
+        }
+
+        .nav-tabs .nav-link.active {
+            color: var(--primary-green);
+            background-color: #ffffff;
+            border-color: #dee2e6 #dee2e6 #ffffff;
+            border-top: 3px solid var(--primary-green);
+            font-weight: bold;
+        }
+
+        .btn-home {
+            background-color: var(--header-green);
+            color: white !important;
+            border-radius: 4px;
+            padding: 6px 16px;
+            font-weight: 500;
+        }
+
+        .btn-home:hover {
+            background-color: var(--accent-green);
+        }
+
+        /* Custom Buttons */
+        .btn-custom-prev {
+            background-color: #5a6268;
+            color: white;
+            min-width: 100px;
+        }
+
+        .btn-custom-prev:hover {
+            background-color: #464d52;
+            color: white;
+        }
+
+        .btn-custom-next {
+            background-color: var(--header-green);
+            color: white;
+            min-width: 100px;
+        }
+
+        .btn-custom-next:hover {
+            background-color: var(--accent-green);
+            color: white;
+        }
+
+        /* Environmental Banner Section Styling */
+        .hero-banner {
+            background: linear-gradient(135deg, #e8f5e9 0%, #c8e6c9 100%);
+            border-radius: 12px;
+            padding: 30px;
+            border: 1px solid #a5d6a7;
+        }
+
+        .hero-image {
+            max-height: 380px;
+            object-fit: cover;
+            border-radius: 10px;
+            box-shadow: 0 6px 12px rgba(0,0,0,0.15);
+            width: 100%;
+        }
+
+        .result-box {
+            background-color: var(--light-green);
+            border: 2px dashed var(--primary-green);
+            border-radius: 12px;
+            padding: 25px;
+        }
+
+        .breakdown-badge {
+            background-color: #ffffff;
+            border: 1px solid #c8e6c9;
+            border-radius: 8px;
+            padding: 12px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.03);
+        }
+    </style>
+</head>
+<body>
+
+    <!-- Main Container Layout -->
+    <div class="container-fluid py-4 px-md-5">
+
+        <!-- Main Heading -->
+        <div class="text-center mb-4">
+            <h1 class="display-4 fw-bold text-success border-bottom pb-2 d-inline-block">
+                Carbon Footprint Calculator
+            </h1>
+        </div>
+
+        <!-- Calculator Interface Component -->
+        <div class="row justify-content-center mb-5">
+            <div class="col-lg-10 col-xl-9">
+                <div class="calculator-card">
+                    
+                    <!-- Step Progress Indicator -->
+                    <div class="progress-wrapper">
+                        <div class="progress-bar-custom" id="progressBar" style="width: 14%;"></div>
+                    </div>
+
+                    <!-- Navigation Tabs Bar with Home Button -->
+                    <div class="d-flex justify-content-between align-items-center bg-light border-bottom flex-wrap px-2 pt-2">
+                        <ul class="nav nav-tabs border-0 flex-grow-1" id="calculatorTabs" role="tablist">
+                            <li class="nav-item" role="presentation">
+                                <button class="nav-link active" id="general-tab" data-bs-toggle="tab" data-bs-target="#general" type="button" role="tab"><i class="fa-solid fa-user me-1"></i> General</button>
+                            </li>
+                            <li class="nav-item" role="presentation">
+                                <button class="nav-link" id="home-tab" data-bs-toggle="tab" data-bs-target="#home" type="button" role="tab"><i class="fa-solid fa-bolt me-1"></i> Home</button>
+                            </li>
+                            <li class="nav-item" role="presentation">
+                                <button class="nav-link" id="travel-tab" data-bs-toggle="tab" data-bs-target="#travel" type="button" role="tab"><i class="fa-solid fa-plane me-1"></i> Travel</button>
+                            </li>
+                            <li class="nav-item" role="presentation">
+                                <button class="nav-link" id="food-tab" data-bs-toggle="tab" data-bs-target="#food" type="button" role="tab"><i class="fa-solid fa-utensils me-1"></i> Food</button>
+                            </li>
+                            <li class="nav-item" role="presentation">
+                                <button class="nav-link" id="electronic-tab" data-bs-toggle="tab" data-bs-target="#electronic" type="button" role="tab"><i class="fa-solid fa-laptop me-1"></i> Electronics</button>
+                            </li>
+                            <li class="nav-item" role="presentation">
+                                <button class="nav-link" id="shopping-tab" data-bs-toggle="tab" data-bs-target="#shopping" type="button" role="tab"><i class="fa-solid fa-bag-shopping me-1"></i> Shopping</button>
+                            </li>
+                            <li class="nav-item" role="presentation">
+                                <button class="nav-link" id="result-tab" data-bs-toggle="tab" data-bs-target="#result" type="button" role="tab"><i class="fa-solid fa-chart-pie me-1"></i> Result</button>
+                            </li>
+                        </ul>
+                        <div class="p-2 ms-auto">
+                            <a href="#general" class="btn btn-home btn-sm shadow-sm" onclick="switchTab('general-tab')">
+                                <i class="fa-solid fa-house me-1"></i> Home
+                            </a>
+                        </div>
+                    </div>
+
+                    <!-- Card Header -->
+                    <div class="custom-card-header fs-5" id="cardHeaderTitle">
+                        Fill the form below - Step 1 of 7
+                    </div>
+
+                    <!-- Card Body with Step Forms -->
+                    <div class="card-body p-4 p-md-5">
+                        <div class="tab-content" id="calculatorTabContent">
+                            
+                            <!-- Tab 1: General Form -->
+                            <div class="tab-pane fade show active" id="general" role="tabpanel">
+                                <h5 class="text-success mb-3"><i class="fa-solid fa-id-card me-2"></i>Personal Profile</h5>
+                                <form id="form-general">
+                                    <div class="row mb-3 align-items-center">
+                                        <label for="userName" class="col-sm-3 col-form-label fw-bold">Name</label>
+                                        <div class="col-sm-9">
+                                            <input type="text" class="form-control" id="userName" placeholder="Enter your full name" required>
+                                        </div>
+                                    </div>
+                                    <div class="row mb-3 align-items-center">
+                                        <label for="userAge" class="col-sm-3 col-form-label fw-bold">Age</label>
+                                        <div class="col-sm-9">
+                                            <input type="number" class="form-control" id="userAge" placeholder="Enter your age" min="1" max="120" value="25">
+                                        </div>
+                                    </div>
+                                    <div class="row mb-3 align-items-center">
+                                        <label for="userCountry" class="col-sm-3 col-form-label fw-bold">Country</label>
+                                        <div class="col-sm-9">
+                                            <select class="form-select" id="userCountry">
+                                                <option value="Saudi Arabia" selected>Saudi Arabia</option>
+                                                <option value="United Arab Emirates">United Arab Emirates</option>
+                                                <option value="Bahrain">Bahrain</option>
+                                                <option value="Kuwait">Kuwait</option>
+                                                <option value="Oman">Oman</option>
+                                                <option value="Qatar">Qatar</option>
+                                                <option value="Other">Other</option>
+                                            </select>
+                                        </div>
+                                    </div>
+                                </form>
+                            </div>
+
+                            <!-- Tab 2: Home Energy Form -->
+                            <div class="tab-pane fade" id="home" role="tabpanel">
+                                <h5 class="text-success mb-3"><i class="fa-solid fa-house-chimney-window me-2"></i>Household Energy Use</h5>
+                                <div class="row mb-3 align-items-center">
+                                    <label for="electricity" class="col-sm-4 col-form-label fw-bold">Monthly Electricity (kWh)</label>
+                                    <div class="col-sm-8">
+                                        <input type="number" class="form-control" id="electricity" placeholder="e.g. 450" value="450" min="0">
+                                        <span class="form-text text-muted">Average monthly consumption in kilowatt-hours.</span>
+                                    </div>
+                                </div>
+                                <div class="row mb-3 align-items-center">
+                                    <label for="householdMembers" class="col-sm-4 col-form-label fw-bold">Household Members</label>
+                                    <div class="col-sm-8">
+                                        <input type="number" class="form-control" id="householdMembers" value="2" min="1" max="20">
+                                        <span class="form-text text-muted">Total people sharing the household space.</span>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Tab 3: Travel Form -->
+                            <div class="tab-pane fade" id="travel" role="tabpanel">
+                                <h5 class="text-success mb-3"><i class="fa-solid fa-car-side me-2"></i>Transportation Habits</h5>
+                                <div class="row mb-3 align-items-center">
+                                    <label for="carKm" class="col-sm-4 col-form-label fw-bold">Car Distance (km / week)</label>
+                                    <div class="col-sm-8">
+                                        <input type="number" class="form-control" id="carKm" placeholder="e.g. 120" value="120" min="0">
+                                    </div>
+                                </div>
+                                <div class="row mb-3 align-items-center">
+                                    <label for="flights" class="col-sm-4 col-form-label fw-bold">Flights per year</label>
+                                    <div class="col-sm-8">
+                                        <input type="number" class="form-control" id="flights" placeholder="e.g. 2" value="2" min="0">
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Tab 4: Food Form -->
+                            <div class="tab-pane fade" id="food" role="tabpanel">
+                                <h5 class="text-success mb-3"><i class="fa-solid fa-bowl-rice me-2"></i>Dietary Choices</h5>
+                                <div class="row mb-3 align-items-center">
+                                    <label for="dietType" class="col-sm-4 col-form-label fw-bold">Primary Diet Type</label>
+                                    <div class="col-sm-8">
+                                        <select class="form-select" id="dietType">
+                                            <option value="meat-heavy">High Meat Consumer</option>
+                                            <option value="average" selected>Average Meat / Mixed</option>
+                                            <option value="vegetarian">Vegetarian</option>
+                                            <option value="vegan">Vegan</option>
+                                        </select>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Tab 5: Electronic Usage Form -->
+                            <div class="tab-pane fade" id="electronic" role="tabpanel">
+                                <h5 class="text-success mb-3"><i class="fa-solid fa-tv me-2"></i>Device & Digital Usage</h5>
+                                <div class="row mb-3 align-items-center">
+                                    <label for="screenHours" class="col-sm-4 col-form-label fw-bold">Daily Screen Time (hours)</label>
+                                    <div class="col-sm-8">
+                                        <input type="number" class="form-control" id="screenHours" placeholder="e.g. 6" value="6" min="0" max="24">
+                                        <span class="form-text text-muted">Daily average computer, TV, and smartphone usage.</span>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Tab 6: Shopping Form -->
+                            <div class="tab-pane fade" id="shopping" role="tabpanel">
+                                <h5 class="text-success mb-3"><i class="fa-solid fa-cart-shopping me-2"></i>Consumption Habits</h5>
+                                <div class="row mb-3 align-items-center">
+                                    <label for="shoppingHabit" class="col-sm-4 col-form-label fw-bold">Shopping Frequency</label>
+                                    <div class="col-sm-8">
+                                        <select class="form-select" id="shoppingHabit">
+                                            <option value="minimal">Minimal / Essential purchases only</option>
+                                            <option value="moderate" selected>Moderate consumer</option>
+                                            <option value="frequent">Frequent goods & fashion shopper</option>
+                                        </select>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Tab 7: Result Form -->
+                            <div class="tab-pane fade" id="result" role="tabpanel">
+                                <div class="result-box text-center">
+                                    <i class="fa-solid fa-leaf fa-3x text-success mb-3"></i>
+                                    <h3 class="fw-bold text-dark">Estimated Carbon Footprint</h3>
+                                    
+                                    <!-- Dynamic User Greeting -->
+                                    <p id="user-greeting" class="fw-bold text-success mb-1">Hello Eco-Warrior!</p>
+                                    
+                                    <!-- Dynamic Total CO2 Output -->
+                                    <p class="display-5 fw-bold text-primary my-2"><span id="co2-output">0.0</span> <span class="fs-5">Tonnes CO2e / year</span></p>
+                                    
+                                    <p id="summary-statement" class="text-secondary small mb-4">
+                                        Calculated using standard conversion factors based on your household, mobility, diet, and lifestyle metrics.
+                                    </p>
+
+                                    <!-- Category Breakdown Display -->
+                                    <div class="row g-3 text-start mt-2">
+                                        <div class="col-6 col-md-4">
+                                            <div class="breakdown-badge">
+                                                <small class="text-muted d-block"><i class="fa-solid fa-house-chimney text-success me-1"></i> Home Energy</small>
+                                                <strong id="bk-home">0.0 t</strong>
+                                            </div>
+                                        </div>
+                                        <div class="col-6 col-md-4">
+                                            <div class="breakdown-badge">
+                                                <small class="text-muted d-block"><i class="fa-solid fa-car text-success me-1"></i> Travel</small>
+                                                <strong id="bk-travel">0.0 t</strong>
+                                            </div>
+                                        </div>
+                                        <div class="col-6 col-md-4">
+                                            <div class="breakdown-badge">
+                                                <small class="text-muted d-block"><i class="fa-solid fa-utensils text-success me-1"></i> Food</small>
+                                                <strong id="bk-food">0.0 t</strong>
+                                            </div>
+                                        </div>
+                                        <div class="col-6 col-md-4">
+                                            <div class="breakdown-badge">
+                                                <small class="text-muted d-block"><i class="fa-solid fa-laptop text-success me-1"></i> Electronics</small>
+                                                <strong id="bk-electronics">0.0 t</strong>
+                                            </div>
+                                        </div>
+                                        <div class="col-6 col-md-4">
+                                            <div class="breakdown-badge">
+                                                <small class="text-muted d-block"><i class="fa-solid fa-bag-shopping text-success me-1"></i> Shopping</small>
+                                                <strong id="bk-shopping">0.0 t</strong>
+                                            </div>
+                                        </div>
+                                        <div class="col-6 col-md-4">
+                                            <div class="breakdown-badge">
+                                                <small class="text-muted d-block"><i class="fa-solid fa-earth-americas text-success me-1"></i> Country Base</small>
+                                                <strong id="bk-country">0.0 t</strong>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                </div>
+                            </div>
+
+                        </div>
+                    </div>
+
+                    <!-- Card Footer Navigation Buttons -->
+                    <div class="card-footer bg-light p-3 d-flex justify-content-center gap-3">
+                        <button type="button" class="btn btn-custom-prev shadow-sm" id="prevBtn" onclick="navigateStep(-1)">
+                            <i class="fa-solid fa-arrow-left me-1"></i> Prev
+                        </button>
+                        <button type="button" class="btn btn-custom-next shadow-sm" id="nextBtn" onclick="navigateStep(1)">
+                            Next <i class="fa-solid fa-arrow-right ms-1"></i>
+                        </button>
+                    </div>
+
+                </div>
+            </div>
+        </div>
+
+        <!-- Project Info Banner -->
+        <div class="row justify-content-center">
+            <div class="col-lg-10 col-xl-9">
+                <div class="hero-banner my-4">
+                    <div class="row align-items-center">
+                        <div class="col-md-7 mb-4 mb-md-0">
+                            <h2 class="text-danger fw-bold mb-3">
+                                <i class="fa-solid fa-triangle-exclamation me-2"></i>Climate change is real!!
+                            </h2>
+                            <p class="lead text-dark mb-3">
+                                Carbon footprint is the total amount of greenhouse gases (including carbon dioxide and methane) generated by our actions. Measuring your footprint is the first crucial step toward environmental sustainability.
+                            </p>
+                            <h4 class="text-success fw-semibold mt-4 mb-2">
+                                Take control today—assess your impact and make a difference!
+                            </h4>
+                            <p class="text-muted">
+                                By adopting energy-efficient habits, reducing plastic consumption, and choosing eco-friendly travel options, you actively contribute to reducing global carbon emissions and protecting our ecosystem.
+                            </p>
+                            <div class="mt-4">
+                                <a href="#calculatorTabs" class="btn btn-primary btn-lg shadow px-4 py-2" onclick="switchTab('general-tab')">
+                                    <i class="fa-solid fa-calculator me-2"></i>Calculate
+                                </a>
+                            </div>
+                        </div>
+
+                        <div class="col-md-5 text-center">
+                            <img src="https://images.unsplash.com/photo-1542601906990-b4d3fb778b09?auto=format&fit=crop&w=800&q=80" 
+                                 alt="Environmental Sustainability Carbon Footprint" 
+                                 class="hero-image img-fluid"
+                                 onerror="this.src='https://placehold.co/600x400/2e7d32/ffffff?text=Environmental+Sustainability'">
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+    </div>
+
+    <!-- Bootstrap 5 JS Bundle with Popper -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    
+    <!-- Link to Separate Logic File -->
+    <script src="script.js"></script>
+</body>
+</html>
